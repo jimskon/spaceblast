@@ -1,0 +1,266 @@
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+    </style>
+    <script src="kinetic-v4.4.3.min.js"></script>
+  </head>
+  <body>
+    <form name="startform">
+
+<input type="button" value="Start" onClick="startGame();">
+</form>
+
+    <div id="container"></div>
+    <script>
+
+      var stageW = 800;
+      var stageH = 500;
+      var anim;
+      var messageLayer = new Kinetic.Layer();
+      var layer = new Kinetic.Layer();
+      var score = 0;
+      var gameTime = 0;
+      var gameOver = false;
+      var ships = new Array();
+      var laser;
+      var spaceship;
+      var shipSpeed = 4;
+      var gunSpeed = 8;
+      var shipHeight = 40;
+      var maxShip = 5;
+      var shooting = 0;
+      var laserSpeed = 15;
+      var start = 0;
+      var shipsLeft = maxShip;
+      var level = 0;
+      var gameOver = false;
+
+
+      function checkFinish(s) {
+
+          if (gameOver) {
+             alert("GAME OVER - LOSER!");
+             anim.stop();
+ 	  } else if (shipsLeft <= 0) {
+              anim.stop();
+              level = level + 1;
+              writeMessage(messageLayer,"Level:"+level+"  Ships: "+shipsLeft);
+              for (var i = 0; i < maxShip ; i++) {
+                  ships[i].active=true;
+	     	  ships[i].show();
+                  shipsLeft = maxShip;
+              }
+              anim.start();
+
+               
+          }
+
+      }
+
+      function animateLaser() {
+
+        var ly = laser.getY();
+
+        if (ly < 0) {
+           laser.hide();
+           shooting = 0;
+        } else {
+           ly = ly - laserSpeed;
+           laser.setY(ly);
+        }
+
+
+      }
+
+      function checkCollisionBox(a,b) {
+	return !(
+		(a.getY()+a.getHeight() < b.getY()) ||
+		(a.getY() > b.getY()+b.getHeight()) ||
+		(a.getX() > b.getX()+b.getWidth()) ||
+		(a.getX()+a.getWidth() < b.getX()) );
+      }
+
+      function checkHit() {
+        for (var i = 0; i < maxShip ; i++) {
+         if (shooting == 0) return;
+         if (ships[i].active && checkCollisionBox(laser, ships[i])) {
+            //alert("ship "+i+" hit!!!");
+            ships[i].active=false;
+	    ships[i].hide();
+            laser.hide();
+            shooting = 0;
+            shipsLeft--;
+            }
+         }
+      }
+
+      function animateShip(i) {
+
+       if (ships[i].active) {
+           var x = ships[i].getX();
+           var y = ships[i].getY();
+
+          
+	   x += ships[i].speed;
+           dy = Math.random()*8 - 3.5;
+           var y = y + dy;
+
+           if (x + ships[i].getWidth() > stageW) {
+              x = stageW - ships[i].getWidth();
+              ships[i].speed = -ships[i].speed;
+	   } else if (x < 0 ) {
+	      x = 0;
+              ships[i].speed = -ships[i].speed;
+           }
+	   ships[i].setX(x);
+	   ships[i].setY(y);
+           if (y > stageH) gameOver = true;
+         }
+      }
+
+      function animateShips(frame) {
+        for (var i = 0; i < maxShip ; i++) {
+          animateShip(i);
+        }   
+        animateLaser();
+        checkHit(); 
+        checkFinish();
+        writeMessage(messageLayer,"Level:"+level+"  Ships: "+shipsLeft);
+
+      }
+      function keepScore() {
+	layer.draw();
+          if (start && !gameOver) {
+             writeMessage(messageLayer, "Time: "+((gameTime++)/10)+"  Bikes: "+score);
+             if (score == bikemax-1) {
+                writeMessage(messageLayer, "Done! Time: "+((gameTime++)/10)+"  Bikes: "+score+"  " ); 
+                gameOver = true;
+             }
+          }
+      }
+
+      function writeMessage(messageLayer, message) {
+        var context = messageLayer.getContext();
+        messageLayer.clear();
+        context.font = '12pt Calibri';
+        context.fillStyle = 'darkred';
+        context.fillText(message, 0,25);
+      }
+
+    
+
+      var stage = new Kinetic.Stage({
+        container: 'container',
+        width: stageW,
+        height: stageH
+      });
+
+
+     var gunObj = new Image();
+      var spaceshipObj = new Image();
+      var laserObj = new Image();
+
+      gunObj.onload = function() {
+        gun = new Kinetic.Image({
+          x: stage.getWidth() / 2 ,
+          y: stageH-20 ,
+          image: gunObj,
+          width: 30,
+          height: 30
+        });
+
+      layer.add(gun);
+      }
+
+      laserObj.onload = function() {
+        laser = new Kinetic.Image({
+          x: stageH-40,
+          y: stage.getHeight() / 2 ,
+          image: laserObj,
+          width: 20,
+          height: 40
+        });
+      layer.add(laser);
+      laser.hide();
+      }
+
+      spaceshipObj.onload = function() {
+        for (var i = 0; i < maxShip ; i++) {
+         ships[i] = new Kinetic.Image({
+          x: Math.random()*stageW ,
+          y: Math.random()*stageH/2 ,
+          image: spaceshipObj,
+          width: Math.random()*60+50,
+          height: Math.random()*30+25
+        });
+        ships[i].speed=shipSpeed*Math.random()*2-shipSpeed;
+        ships[i].active = true;
+      layer.add(ships[i]);
+      }
+
+      anim = new Kinetic.Animation(function(frame) {
+        animateShips(frame);
+      }, layer);
+
+      }
+
+
+      function startGame() {
+          writeMessage(messageLayer,"Level:"+level);
+          gameOver=false;
+          anim.start();
+      }
+
+
+
+     
+
+
+       window.addEventListener('keydown', function(e) {
+          var x = gun.getX();
+          if (e.which == 37) {
+             if (x > 0) {
+                x = x - gunSpeed;
+             } 
+             gun.setX(x);
+	  } else if (e.which == 38) {
+
+	  } else if (e.which == 39) {
+             if (x+gun.getWidth() < stageW) {
+                x = x + gunSpeed;
+             }
+             gun.setX(x);
+
+	  } else if (e.which == 32) {
+            if (shooting == 0) {
+              shooting = 1;
+              laser.setX(x+gun.getWidth()/2-laser.getWidth()/2);
+	      laser.setY(gun.getY()-30);
+              laser.show();
+            }
+
+	  }    
+          layer.draw();
+        });
+
+      layer.draw();
+      stage.add(layer);
+      stage.add(messageLayer);
+      writeMessage(messageLayer,"Shoot the invading spaceship");
+
+      gunObj.src = 'gun2.jpg';
+      spaceshipObj.src = 'saucer.png';
+      laserObj.src = 'laser.png';
+
+
+
+      loop = setInterval(keepScore, 100);
+    </script>
+  </body>
+</html>
