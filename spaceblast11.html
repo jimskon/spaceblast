@@ -8,7 +8,8 @@
         padding: 0px;
       }
     </style>
-    <script src="kinetic-v4.4.3.min.js"></script>
+    <!--<script src="kinetic-v4.4.3.min.js"></script> -->
+    <script src="konva.js"></script>
   </head>
   <body>
     <form name="startform">
@@ -22,8 +23,8 @@
       var stageW = 800;
       var stageH = 500;
       var anim;
-      var messageLayer = new Kinetic.Layer();
-      var layer = new Kinetic.Layer();
+      var messageLayer = new Konva.Layer();
+      var layer = new Konva.Layer();
       var score = 0;
       var gameTime = 0;
       var gameOver = false;
@@ -155,7 +156,7 @@
 
     
 
-      var stage = new Kinetic.Stage({
+      var stage = new Konva.Stage({
         container: 'container',
         width: stageW,
         height: stageH
@@ -167,7 +168,7 @@
       var laserObj = new Image();
 
       gunObj.onload = function() {
-        gun = new Kinetic.Image({
+        gun = new Konva.Image({
           x: stage.getWidth() / 2 ,
           y: stageH-20 ,
           image: gunObj,
@@ -179,7 +180,7 @@
       }
 
       laserObj.onload = function() {
-        laser = new Kinetic.Image({
+        laser = new Konva.Image({
           x: stageH-40,
           y: stage.getHeight() / 2 ,
           image: laserObj,
@@ -192,7 +193,7 @@
 
       spaceshipObj.onload = function() {
         for (var i = 0; i < maxShip ; i++) {
-         ships[i] = new Kinetic.Image({
+         ships[i] = new Konva.Image({
           x: Math.random()*stageW ,
           y: Math.random()*stageH/2 ,
           image: spaceshipObj,
@@ -204,7 +205,7 @@
       layer.add(ships[i]);
       }
 
-      anim = new Kinetic.Animation(function(frame) {
+      anim = new Konva.Animation(function(frame) {
         animateShips(frame);
       }, layer);
 
